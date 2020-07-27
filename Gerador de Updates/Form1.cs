@@ -3,6 +3,10 @@ using System.IO;
 using System.Windows.Forms;
 using System.Security.Cryptography;
 using Ionic.Zip;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Gerador_de_Updates.Utils;
+using System.Text.Json;
 
 namespace Gerador_de_Updates
 {
@@ -13,104 +17,139 @@ namespace Gerador_de_Updates
         public Form1()
         {
             InitializeComponent();
-            lblProgresso.Text = "Escolha os arquivos para serem compactados";
-
+            
         }
 
-
-
-        private void button1_Click(object sender, EventArgs e)
+        private void btnSelectFolder_Click(object sender, EventArgs e)
         {
+            
             if (folderBrowserDialog1.ShowDialog().Equals(DialogResult.OK))
             {
-                backgroundWorker1.RunWorkerAsync();
+                txtClientFolder.Text = folderBrowserDialog1.SelectedPath;
+                if (Directory.Exists(folderBrowserDialog1.SelectedPath + "\\Updates") && File.Exists(folderBrowserDialog1.SelectedPath + "\\Update.json"))
+                {
+                    Directory.Delete(folderBrowserDialog1.SelectedPath + "\\Updates", true);
+                    File.Delete(folderBrowserDialog1.SelectedPath + "\\Update.json");
+                }
+
             }
 
-
+            btnUpdate.Enabled = true;
+            txtClientFolder.Enabled = true;
         }
 
-        private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        private async void CreateFileList(string pathClient)
         {
-            string pastaSelecionada = folderBrowserDialog1.SelectedPath;
-
-            string pastaArquivoZip = pastaSelecionada + "\\Updates\\"; // Aqui vamos informar para qual pasta devemos enviar o arquivo, neste caso será uma subpasta da pasta atual (Este método pode ser feito de diversas formas, está é uma bem simples)
-
-            if (Directory.Exists(pastaArquivoZip))
-            {
-                MessageBox.Show("Pasta Updates antiga excluida e arquivo UpdateList.txt", "Informativo", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                Directory.Delete(pastaArquivoZip, true);
-                File.Delete(pastaSelecionada + "\\UpdateList.txt");
-            }
-
+            string pastaArquivoZip = pathClient + @"\Updates\";
             Directory.CreateDirectory(pastaArquivoZip);
-            DirectoryInfo dir = new DirectoryInfo(pastaSelecionada);
-
-            var subpastas = dir.GetDirectories("*", SearchOption.AllDirectories);
-
-
-
-
-            var Root = Directory.GetFiles(pastaSelecionada, "*.*", SearchOption.AllDirectories);
-            foreach (string arquivo in Root)
+            DirectoryInfo dir = new DirectoryInfo(pathClient);
+            try
             {
-                try
+                var arquivos = new List<Arquivo>();
+                    
+                if (!Directory.Exists(pathClient)) return;   
+               
+                string[] fileListDir = Directory.GetFiles(pathClient, "*.*", SearchOption.AllDirectories);
+                int totalFiles = fileListDir.Length;
+                //($"Total de arquivos : {totalFiles}, Criado em {DateTime.Now}", xm.Doc.DocumentElement);
+
+                for (int i = 0; i < totalFiles; i++)
                 {
-
-                    var ShaOne = new SHA1CryptoServiceProvider();
-                    byte[] data = File.ReadAllBytes(arquivo);
-                    var DataCrip = ShaOne.ComputeHash(data);
-                    string hash = BitConverter.ToString(DataCrip).Replace("-", string.Empty).ToLower();
-
-                    using (StreamWriter writer = File.AppendText(pastaArquivoZip + "\\UpdateList.txt"))
+                    var i1 = i;
+                    await Task.Run(() =>
                     {
-                        writer.WriteLine(arquivo.Replace(string.Format(pastaSelecionada + "\\"), string.Empty) + "," + hash);
-                    }
+                        string filePath = fileListDir[i1];
+                        string fileClientPath = filePath.Replace(pathClient, string.Empty);
 
-                    string nomeArquivo = arquivo.Replace(string.Format(pastaSelecionada + "\\"), string.Empty);
+                        var ShaOne = new SHA1CryptoServiceProvider();
+                        byte[] data = File.ReadAllBytes(filePath);
+                        var DataCrip = ShaOne.ComputeHash(data);
+                        string hash = BitConverter.ToString(DataCrip).Replace("-", string.Empty).ToLower();
 
-                    using (ZipFile file = new ZipFile())
-                    {
-                        foreach (var item in subpastas)
+                        FileInfo file = new FileInfo(filePath);
+
+                        if (fileClientPath[0] == Path.DirectorySeparatorChar)
+                            fileClientPath = fileClientPath.Substring(1);
+                        if (fileClientPath[0] == Path.AltDirectorySeparatorChar)
+                            fileClientPath = fileClientPath.Substring(1);
+
+
+                        //xm.CreateAttribute(fileElement, "Sha1", hash);
+
+                        
+
+
+                        string nomeArquivo = filePath.Replace(string.Format(pathClient + @"\"), string.Empty);
+
+
+                        arquivos.Add(new Arquivo()
                         {
-                            Directory.CreateDirectory(pastaArquivoZip + item.FullName.Replace(string.Format(pastaSelecionada), string.Empty));
+                           Nome = nomeArquivo,
+                           Hash = hash
                         }
-                        file.AddFile(arquivo, "");
-                        file.Save(pastaArquivoZip + nomeArquivo + ".zip");
-                        Directory.Delete(pastaArquivoZip + "Updates");
-                        lblProgresso.BeginInvoke((MethodInvoker)delegate () { lblProgresso.Text = "Compactando arquivos, Por favor Aguarde..."; });
-                        btnFileDialog.BeginInvoke((MethodInvoker)delegate () { btnFileDialog.Enabled = false; });
-                        progressBar1.BeginInvoke((MethodInvoker)delegate () { progressBar1.Style = ProgressBarStyle.Marquee; });
-                    }
+                        );
+                       
+                        using (ZipFile zips = new ZipFile())
+                        {
+                            var subpastas = dir.GetDirectories("*", SearchOption.AllDirectories);
 
+                            foreach (var item in subpastas)
+                            {
+                                Directory.CreateDirectory(pastaArquivoZip + item.FullName.Replace(string.Format(pathClient), string.Empty));
+                            }
+                            zips.AddFile(filePath, "");
+                            zips.Save(pastaArquivoZip + nomeArquivo + ".zip");
+                            if (Directory.Exists(pastaArquivoZip + "Updates"))
+                                Directory.Delete(pastaArquivoZip + "Updates", true);
+                            btnSelectFolder.BeginInvoke((MethodInvoker)delegate () { btnSelectFolder.Enabled = false; });
+
+                        }
+
+
+                        this.Invoke(new MethodInvoker(delegate
+                        {
+                            progressStatus.Value = (i1 + 1) * 100 / totalFiles;
+                            lblStatus.Text = $"Status: Processando arquivo {file.Name} ({i1}/{totalFiles}) - ({progressStatus.Value}%)";
+                        }));
+                    });
                 }
 
-                catch (Exception ex)
+                var options = new JsonSerializerOptions
                 {
+                    WriteIndented = true,
+                };
+                var jsonString = JsonSerializer.Serialize(arquivos,options);
 
-                    MessageBox.Show(ex.ToString());
+                using (FileStream fs = File.Create(pathClient + "\\Update.json"))
+                {
+                    await JsonSerializer.SerializeAsync(fs, arquivos,options);
                 }
-
-
+                lblStatus.Text = "Status: Completo";
+                btnSelectFolder.Enabled = true;
+                txtClientFolder.Text = "";
+                txtClientFolder.Enabled = false;
+                btnUpdate.Enabled = false;
+               // xm.SaveXml(Path.Combine(pastaArquivoZip + "UpdateList.xml"));
             }
 
-        }
-
-        private void backgroundWorker1_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
-        {
-
-        }
-
-        private void backgroundWorker1_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
-        {
-            progressBar1.BeginInvoke((MethodInvoker)delegate () { progressBar1.Style = ProgressBarStyle.Blocks; });
-
-            if (MessageBox.Show("Arquivos criados com sucesso na Pasta ArquivoZip", "Tudo ok!", MessageBoxButtons.OK, MessageBoxIcon.Information).Equals(DialogResult.OK))
+            catch (Exception e)
             {
-                lblProgresso.Text = "Escolha os arquivos a serem compactados";
-                btnFileDialog.BeginInvoke((MethodInvoker)delegate () { btnFileDialog.Enabled = true; });
-
+                MessageBox.Show(e.Message, "Erro ao tentar criar arquivos de Updates",MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            lblStatus.Text = "Escolha a pasta para criar os arquivos de update";
+            txtClientFolder.Enabled = false;
+            btnUpdate.Enabled = false;
+        }
+
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            CreateFileList(folderBrowserDialog1.SelectedPath);
+        }
+
+       
     }
 }
 

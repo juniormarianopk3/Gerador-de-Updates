@@ -29,70 +29,86 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            this.btnFileDialog = new System.Windows.Forms.Button();
+            this.btnSelectFolder = new System.Windows.Forms.Button();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.lblProgresso = new System.Windows.Forms.Label();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.progressStatus = new System.Windows.Forms.ProgressBar();
+            this.lblStatus = new System.Windows.Forms.Label();
+            this.txtClientFolder = new System.Windows.Forms.TextBox();
+            this.btnUpdate = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // btnFileDialog
+            // btnSelectFolder
             // 
-            this.btnFileDialog.Location = new System.Drawing.Point(12, 111);
-            this.btnFileDialog.Name = "btnFileDialog";
-            this.btnFileDialog.Size = new System.Drawing.Size(118, 23);
-            this.btnFileDialog.TabIndex = 0;
-            this.btnFileDialog.Text = "Abir Arquivos";
-            this.btnFileDialog.UseVisualStyleBackColor = true;
-            this.btnFileDialog.Click += new System.EventHandler(this.button1_Click);
+            this.btnSelectFolder.Location = new System.Drawing.Point(356, 12);
+            this.btnSelectFolder.Name = "btnSelectFolder";
+            this.btnSelectFolder.Size = new System.Drawing.Size(118, 23);
+            this.btnSelectFolder.TabIndex = 0;
+            this.btnSelectFolder.Text = "Abir Arquivos";
+            this.btnSelectFolder.UseVisualStyleBackColor = true;
+            this.btnSelectFolder.Click += new System.EventHandler(this.btnSelectFolder_Click);
             // 
-            // backgroundWorker1
+            // progressStatus
             // 
-            this.backgroundWorker1.WorkerReportsProgress = true;
-            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
-            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
+            this.progressStatus.Location = new System.Drawing.Point(12, 116);
+            this.progressStatus.Name = "progressStatus";
+            this.progressStatus.Size = new System.Drawing.Size(462, 17);
+            this.progressStatus.TabIndex = 1;
             // 
-            // lblProgresso
+            // lblStatus
             // 
-            this.lblProgresso.AutoSize = true;
-            this.lblProgresso.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblProgresso.ForeColor = System.Drawing.Color.DimGray;
-            this.lblProgresso.Location = new System.Drawing.Point(8, 61);
-            this.lblProgresso.Name = "lblProgresso";
-            this.lblProgresso.Size = new System.Drawing.Size(60, 24);
-            this.lblProgresso.TabIndex = 2;
-            this.lblProgresso.Text = "label1";
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Location = new System.Drawing.Point(12, 100);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(35, 13);
+            this.lblStatus.TabIndex = 3;
+            this.lblStatus.Text = "label1";
             // 
-            // progressBar1
+            // txtClientFolder
             // 
-            this.progressBar1.Location = new System.Drawing.Point(12, 88);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(462, 17);
-            this.progressBar1.TabIndex = 1;
+            this.txtClientFolder.Location = new System.Drawing.Point(12, 12);
+            this.txtClientFolder.Name = "txtClientFolder";
+            this.txtClientFolder.Size = new System.Drawing.Size(338, 20);
+            this.txtClientFolder.TabIndex = 4;
+            // 
+            // btnUpdate
+            // 
+            this.btnUpdate.Location = new System.Drawing.Point(356, 41);
+            this.btnUpdate.Name = "btnUpdate";
+            this.btnUpdate.Size = new System.Drawing.Size(118, 23);
+            this.btnUpdate.TabIndex = 5;
+            this.btnUpdate.Text = "Criar Updates";
+            this.btnUpdate.UseVisualStyleBackColor = true;
+            this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(486, 145);
-            this.Controls.Add(this.lblProgresso);
-            this.Controls.Add(this.progressBar1);
-            this.Controls.Add(this.btnFileDialog);
+            this.Controls.Add(this.btnUpdate);
+            this.Controls.Add(this.txtClientFolder);
+            this.Controls.Add(this.lblStatus);
+            this.Controls.Add(this.progressStatus);
+            this.Controls.Add(this.btnSelectFolder);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Form1";
             this.Text = "Gerador de Updates";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-        private System.Windows.Forms.Button btnFileDialog;
+        private System.Windows.Forms.Button btnSelectFolder;
         public System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
-        private System.Windows.Forms.Label lblProgresso;
-        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ProgressBar progressStatus;
+        private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.TextBox txtClientFolder;
+        private System.Windows.Forms.Button btnUpdate;
     }
 }
 
