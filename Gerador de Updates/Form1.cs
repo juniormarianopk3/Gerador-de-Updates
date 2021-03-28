@@ -84,8 +84,8 @@ namespace Gerador_de_Updates
 
                         arquivos.Add(new Arquivo()
                         {
-                           Nome = nomeArquivo,
-                           Hash = hash
+                            Nome = nomeArquivo.Replace("\\", "/"),
+                            Hash = hash
                         }
                         );
                        
