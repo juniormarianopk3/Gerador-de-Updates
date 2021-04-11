@@ -26,7 +26,7 @@ namespace Gerador_de_Updates
             if (folderBrowserDialog1.ShowDialog().Equals(DialogResult.OK))
             {
                 txtClientFolder.Text = folderBrowserDialog1.SelectedPath;
-                if (Directory.Exists(folderBrowserDialog1.SelectedPath + "\\Updates") && File.Exists(folderBrowserDialog1.SelectedPath + "\\Update.json"))
+                if (Directory.Exists(folderBrowserDialog1.SelectedPath + "\\Updates") || File.Exists(folderBrowserDialog1.SelectedPath + "\\Update.json"))
                 {
                     Directory.Delete(folderBrowserDialog1.SelectedPath + "\\Updates", true);
                     File.Delete(folderBrowserDialog1.SelectedPath + "\\Update.json");
@@ -84,7 +84,7 @@ namespace Gerador_de_Updates
 
                         arquivos.Add(new Arquivo()
                         {
-                            Nome = nomeArquivo.Replace("\\", "/"),
+                            Nome = nomeArquivo.Replace("\\", "/") + ".zip",
                             Hash = hash
                         }
                         );
@@ -120,9 +120,9 @@ namespace Gerador_de_Updates
                 };
                 var jsonString = JsonSerializer.Serialize(arquivos,options);
 
-                using (FileStream fs = File.Create(pathClient + "\\Update.json"))
+                using (FileStream fs = File.Create(pathClient + "\\Updates\\Update.json"))
                 {
-                    await JsonSerializer.SerializeAsync(fs, arquivos,options);
+                    await JsonSerializer.SerializeAsync(fs, arquivos ,options);
                 }
                 lblStatus.Text = "Status: Completo";
                 btnSelectFolder.Enabled = true;
